@@ -5,6 +5,8 @@ import pathlib
 
 import typer
 
+import cakes_results
+
 # Initialize the logger
 logging.basicConfig(
     format="%(asctime)s - %(name)-8s - %(levelname)-8s - %(message)s",
@@ -34,6 +36,16 @@ def main(
     report_paths = sorted(filter(lambda p: p.suffix == ".json", reports_dir.iterdir()))
 
     logger.info(f"Found {len(report_paths)} reports.")
+
+    reports = [
+        cakes_results.report.Report.from_path(report_path)
+        for report_path in report_paths
+    ]
+
+    logger.info(f"Loaded {len(reports)} reports.")
+
+    for report in reports:
+        logger.info(str(report))
 
 
 if __name__ == "__main__":
