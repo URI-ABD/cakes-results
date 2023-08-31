@@ -47,14 +47,25 @@ def main(
 
     logger.info(f"Found {len(report_paths)} reports.")
 
-    reports = [
-        cakes_results.report.Report.from_path(report_path)
-        for report_path in report_paths
-    ]
+    reports: dict[str, dict[int, list[cakes_results.report.Report]]] = {}
+    for report_path in report_paths:
+        r = cakes_results.report.Report.from_path(report_path)
 
-    logger.info(f"Loaded {len(reports)} reports.")
+        if r.data_name not in reports:
+            reports[r.data_name] = {}
 
-    cakes_results.violins.draw(reports, plots_dir)
+        if r.num_shards not in reports[r.data_name]:
+            reports[r.data_name][r.num_shards] = []
+
+        reports[r.data_name][r.num_shards].append(r)
+
+    logger.info(f"Loaded reports for {len(reports)} data sets.")
+
+    for data_name, d_reports in reports.items():
+        for num_shards, r_reports in d_reports.items():
+            logger.info(f"Plotting {data_name} in {num_shards} shard(s) ...")
+
+            cakes_results.violins.draw(r_reports, plots_dir)
 
 
 if __name__ == "__main__":

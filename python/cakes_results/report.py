@@ -23,18 +23,12 @@ class Report(pydantic.BaseModel):
     elapsed_mean: float = 0.0
     elapsed_std: float = 0.0
 
-    throughput_mean: float = 0.0
-
     def __init__(self, **kwargs) -> None:  # noqa: ANN003
         """Calculate additional fields and initialize the Report."""
         elapsed = kwargs.get("elapsed")
 
         kwargs["elapsed_mean"] = float(numpy.mean(elapsed))
         kwargs["elapsed_std"] = float(numpy.std(elapsed))
-
-        kwargs["throughput_mean"] = float(
-            kwargs["num_queries"] / kwargs["elapsed_mean"],
-        )
 
         super().__init__(**kwargs)
 
@@ -46,7 +40,7 @@ class Report(pydantic.BaseModel):
             f"  metric_name={self.metric_name},\n"
             f"  cardinality={self.cardinality},\n"
             f"  dimensionality={self.dimensionality},\n"
-            f"  shard_sizes={self.shard_sizes},\n"
+            f"  num_shards={self.num_shards},\n"
             f"  num_queries={self.num_queries},\n"
             f"  k={self.k},\n"
             f"  algorithm={self.algorithm},\n"
@@ -61,3 +55,13 @@ class Report(pydantic.BaseModel):
         """Load a report from a path."""
         with path.open("r") as f:
             return cls(**json.load(f))
+
+    @property
+    def throughput_mean(self) -> float:
+        """Mean QPS."""
+        return self.num_queries / self.elapsed_mean
+
+    @property
+    def num_shards(self) -> int:
+        """Number of shards."""
+        return len(self.shard_sizes)

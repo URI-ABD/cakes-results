@@ -70,5 +70,5 @@ def draw(
     if plots_dir is None:
         pyplot.show()
     else:
-        plot_name = f"{data_name}_{metric_name}_{num_shards}.png"
+        plot_name = f"{data_name}_{num_shards}.png"
         fig.savefig(plots_dir / plot_name, dpi=128)
