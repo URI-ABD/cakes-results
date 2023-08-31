@@ -14,7 +14,7 @@ class Report(pydantic.BaseModel):
     metric_name: str
     cardinality: int
     dimensionality: int
-    shard_sizes: list[int]
+    shard_sizes: tuple[int, ...]
     num_queries: int
     k: int
     algorithm: str

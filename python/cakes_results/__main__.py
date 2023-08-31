@@ -29,9 +29,19 @@ def main(
         readable=True,
         resolve_path=True,
     ),
+    plots_dir: pathlib.Path = typer.Option(
+        ...,
+        "--plots-dir",
+        help="The directory to save the plots.",
+        exists=True,
+        file_okay=False,
+        writable=True,
+        resolve_path=True,
+    ),
 ) -> None:
     """The main entry point of the application."""
     logger.info(f"Loading reports from {reports_dir} ...")
+    logger.info(f"Saving plots to {plots_dir} ...")
 
     report_paths = sorted(filter(lambda p: p.suffix == ".json", reports_dir.iterdir()))
 
@@ -44,8 +54,7 @@ def main(
 
     logger.info(f"Loaded {len(reports)} reports.")
 
-    for report in reports:
-        logger.info(str(report))
+    cakes_results.violins.draw(reports, plots_dir)
 
 
 if __name__ == "__main__":
