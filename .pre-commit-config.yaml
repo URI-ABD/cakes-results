@@ -33,12 +33,12 @@ repos:
   hooks:
     - id: cargo-fmt
       name: cargo fmt
-      entry: cargo fmt -- --check
+      entry: cargo fmt --all -- --check
       language: rust
       types: [rust]
     - id: cargo-clippy
       name: cargo clippy
-      entry: cargo clippy -- -D warnings
+      entry: cargo clippy --all -- -D warnings
       language: rust
-      # pass_filenames: false
+      pass_filenames: false
       types: [rust]

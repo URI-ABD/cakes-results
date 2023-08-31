@@ -176,7 +176,6 @@ fn main() -> Result<(), String> {
 
         // Run benchmarks on multiple shards
         for num_shards in (1..8).map(|v| 2usize.pow(v)) {
-
             let shards = train_data
                 .chunks(cardinality / num_shards)
                 .enumerate()

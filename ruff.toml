@@ -33,6 +33,7 @@ ignore = [
   "ANN101",  # Missing type annotation for self in method
   "ANN102",  # Missing type annotation for cls in classmethod
   "PLR2004",  # Use of magic value in comparison
+  "B008",  # typer.Option
 ]
 unfixable = ["B"]  # Avoid trying to fix flake8-bugbear violations.
 target-version = "py39"  # Assume Python 3.9.

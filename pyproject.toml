@@ -5,7 +5,7 @@ description = "Regenerating plots for the CAKES paper."
 authors = ["Najib Ishaq <najib_ishaq@zoho.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "src", from = "python"}]
+packages = [{include = "cakes_results", from = "python"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
