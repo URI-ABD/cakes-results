@@ -70,9 +70,9 @@ fn main() -> Result<(), String> {
     };
 
     for &(data_name, metric_name) in ann_readers::DATASETS {
-        if data_name != "glove-25" {
-            continue;
-        }
+        // if data_name != "glove-25" {
+        //     continue;
+        // }
 
         let metric = if let Ok(metric) = Metrics::from_str(metric_name) {
             metric.distance()
@@ -176,23 +176,27 @@ fn main() -> Result<(), String> {
 
         // Run benchmarks on multiple shards
         for num_shards in (1..8).map(|v| 2usize.pow(v)) {
-            let shards = train_data
-                .chunks(cardinality / num_shards)
-                .enumerate()
-                .map(|(i, data)| {
-                    let name = format!("shard-{}", i);
-                    VecDataset::new(name, data.to_vec(), metric, false)
-                })
-                .map(|s| {
-                    let threshold = s.cardinality().as_f64().log2().ceil() as usize;
-                    let criteria = PartitionCriteria::new(true).with_min_cardinality(threshold);
-                    (s, criteria)
-                })
-                .collect::<Vec<_>>();
-            let shard_sizes = shards
-                .iter()
-                .map(|(s, _)| s.cardinality())
-                .collect::<Vec<_>>();
+            let shards = {
+                train_data
+                    .chunks(cardinality / num_shards)
+                    .enumerate()
+                    .map(|(i, data)| {
+                        let name = format!("shard-{}", i);
+                        VecDataset::new(name, data.to_vec(), metric, false)
+                    })
+                    .map(|s| {
+                        let threshold = s.cardinality().as_f64().log2().ceil() as usize;
+                        let criteria = PartitionCriteria::new(true).with_min_cardinality(threshold);
+                        (s, criteria)
+                    })
+                    .collect::<Vec<_>>()
+            };
+            let shard_sizes = {
+                shards
+                    .iter()
+                    .map(|(s, _)| s.cardinality())
+                    .collect::<Vec<_>>()
+            };
             println!("num_shards: {}", shard_sizes.len());
 
             let sharded_cakes = ShardedCakes::new(shards, Some(42));
@@ -219,7 +223,7 @@ fn main() -> Result<(), String> {
                         metric_name,
                         cardinality,
                         dimensionality,
-                        shard_sizes: vec![1],
+                        shard_sizes: shard_sizes.clone(),
                         num_queries,
                         k,
                         algorithm: algorithm.name(),
