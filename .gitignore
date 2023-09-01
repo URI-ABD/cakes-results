@@ -25,3 +25,4 @@ Cargo.lock
 __pycache__
 /plots
 .DS_Store
+*.zip
