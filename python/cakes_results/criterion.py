@@ -40,6 +40,14 @@ class ConfidenceInterval(pydantic.BaseModel):
     lower_bound: float
     upper_bound: float
 
+    def __init__(self, **kwargs):
+        """Initialize a ConfidenceInterval."""
+        super().__init__(**kwargs)
+
+        # Convert nanoseconds to seconds
+        self.lower_bound *= 1e-9
+        self.upper_bound *= 1e-9
+
     @property
     def mean(self) -> float:
         """Return the mean of the elapsed times."""
@@ -145,12 +153,12 @@ class Ks(pydantic.BaseModel):
     @property
     def elapsed_mean(self) -> float:
         """Return the mean of the elapsed times."""
-        return self.estimates.elapsed_mean
+        return self.estimates.elapsed_mean / self.num_queries
 
     @property
     def elapsed_std(self) -> float:
         """Return the standard deviation of the elapsed times."""
-        return self.estimates.elapsed_std
+        return self.estimates.elapsed_std / self.num_queries
 
     @property
     def elapsed(self) -> list[float]:
