@@ -70,7 +70,7 @@ fn main() -> Result<(), String> {
     };
 
     for &(data_name, metric_name) in ann_readers::DATASETS {
-        if data_name != "glove-25" || data_name != "glove-100" {
+        if !["glove-25", "glove-100"].contains(&data_name) {
             continue;
         }
 
