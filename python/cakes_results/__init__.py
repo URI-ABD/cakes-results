@@ -51,11 +51,42 @@ class Mode(str, enum.Enum):
             msg = f"Unknown mode {self}."
             raise ValueError(msg)
 
+    def throughput(self, inp_dir: pathlib.Path, out_dir: pathlib.Path) -> None:
+        """Print the throughput instead of plotting the elapsed time."""
+        if self == Mode.Reports:
+            lines = [
+                "data_name,num_shards,algorithm,k,throughput",
+            ]
+            reports = load_reports(inp_dir)
+            for data_name, d_reports in reports.items():
+                for num_shards, r_reports in d_reports.items():
+                    for r in r_reports:
+                        line = list(
+                            map(
+                                str,
+                                [
+                                    data_name,
+                                    num_shards,
+                                    r.algorithm,
+                                    r.k,
+                                    f"{r.throughput_mean:.3e}",
+                                ],
+                            ),
+                        )
+                        lines.append(",".join(line))
 
-def plot_reports(inp_dir: pathlib.Path, plots_dir: pathlib.Path) -> None:
-    """Make plots from reports."""
+            out_dir.joinpath("throughput.csv").write_text("\n".join(lines))
+
+        elif self == Mode.Criterion:
+            raise NotImplementedError
+        else:
+            msg = f"Unknown mode {self}."
+            raise ValueError(msg)
+
+
+def load_reports(inp_dir: pathlib.Path) -> dict[str, dict[int, list[report.Report]]]:
+    """Load reports from a directory."""
     logger.info(f"Loading reports from {inp_dir} ...")
-    logger.info(f"Saving plots to {plots_dir} ...")
 
     report_paths = sorted(filter(lambda p: p.suffix == ".json", inp_dir.iterdir()))
 
@@ -73,7 +104,14 @@ def plot_reports(inp_dir: pathlib.Path, plots_dir: pathlib.Path) -> None:
 
         reports[r.data_name][r.num_shards].append(r)
 
+    return reports
+
+
+def plot_reports(inp_dir: pathlib.Path, plots_dir: pathlib.Path) -> None:
+    """Make plots from reports."""
+    reports = load_reports(inp_dir)
     logger.info(f"Loaded reports for {len(reports)} data sets.")
+    logger.info(f"Saving plots to {plots_dir} ...")
 
     for data_name, d_reports in reports.items():
         for num_shards, r_reports in d_reports.items():

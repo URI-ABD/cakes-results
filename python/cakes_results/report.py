@@ -22,13 +22,17 @@ class Report(pydantic.BaseModel):
 
     elapsed_mean: float = 0.0
     elapsed_std: float = 0.0
+    throughput: list[float] = []
+    throughput_mean: float = 0.0
 
     def __init__(self, **kwargs) -> None:  # noqa: ANN003
         """Calculate additional fields and initialize the Report."""
-        elapsed = kwargs.get("elapsed")
+        elapsed: list[float] = kwargs.get("elapsed")  # type: ignore[assignment]
 
         kwargs["elapsed_mean"] = float(numpy.mean(elapsed))
         kwargs["elapsed_std"] = float(numpy.std(elapsed))
+        kwargs["throughput"] = [1.0 / t for t in elapsed]
+        kwargs["throughput_mean"] = float(numpy.mean(kwargs["throughput"]))
 
         super().__init__(**kwargs)
 
@@ -55,11 +59,6 @@ class Report(pydantic.BaseModel):
         """Load a report from a path."""
         with path.open("r") as f:
             return cls(**json.load(f))
-
-    @property
-    def throughput_mean(self) -> float:
-        """Mean QPS."""
-        return self.num_queries / self.elapsed_mean
 
     @property
     def num_shards(self) -> int:

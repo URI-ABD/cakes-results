@@ -44,9 +44,17 @@ def main(
         writable=True,
         resolve_path=True,
     ),
+    throughput: bool = typer.Option(
+        False,
+        "--throughput",
+        help="Print the throughput instead of plotting the elapsed time.",
+    ),
 ) -> None:
     """The main entry point of the application."""
-    mode.plot(inp_dir, plots_dir)
+    if throughput:
+        mode.throughput(inp_dir, plots_dir)
+    else:
+        mode.plot(inp_dir, plots_dir)
 
 
 if __name__ == "__main__":
