@@ -40,7 +40,7 @@ class ConfidenceInterval(pydantic.BaseModel):
     lower_bound: float
     upper_bound: float
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:  # noqa: ANN003
         """Initialize a ConfidenceInterval."""
         super().__init__(**kwargs)
 
