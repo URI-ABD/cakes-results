@@ -40,6 +40,7 @@ struct Report<'a> {
     k: usize,
     algorithm: &'a str,
     elapsed: Vec<f32>,
+    recalls: Vec<f64>,
 }
 
 impl Report<'_> {
@@ -69,7 +70,7 @@ fn main() -> Result<(), String> {
     };
 
     for &(data_name, metric_name) in ann_readers::DATASETS {
-        if data_name != "sift" {
+        if data_name != "glove-25" || data_name != "glove-100" {
             continue;
         }
 
@@ -100,16 +101,41 @@ fn main() -> Result<(), String> {
             let algorithm = cakes.fastest_algorithm;
             println!("\t\talgorithm: {}", algorithm.name());
 
-            let elapsed = queries
+            let (elapsed, recalls): (Vec<_>, Vec<_>) = queries
                 .par_iter()
                 .map(|query| {
                     let start = Instant::now();
-                    let hits = cakes.knn_search(query, k);
+                    let mut hits = cakes.knn_search(query, k);
                     let elapsed = start.elapsed().as_secs_f32();
-                    drop(hits);
-                    elapsed
+                    hits.sort_by(|(_, a), (_, b)| {
+                        a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Greater)
+                    });
+
+                    let mut linear_hits = cakes.linear_knn(query, k);
+                    linear_hits.sort_by(|(_, a), (_, b)| {
+                        a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Greater)
+                    });
+
+                    let mut hits = hits.into_iter().map(|(_, d)| d).peekable();
+                    let mut linear_hits = linear_hits.into_iter().map(|(_, d)| d).peekable();
+
+                    let mut num_common = 0;
+                    while let (Some(&hit), Some(&linear_hit)) = (hits.peek(), linear_hits.peek()) {
+                        if hit < linear_hit {
+                            hits.next();
+                        } else if hit > linear_hit {
+                            linear_hits.next();
+                        } else {
+                            num_common += 1;
+                            hits.next();
+                            linear_hits.next();
+                        }
+                    }
+                    let recall = num_common.as_f64() / k.as_f64();
+
+                    (elapsed, recall)
                 })
-                .collect::<Vec<_>>();
+                .unzip();
 
             Report {
                 data_name,
@@ -121,6 +147,7 @@ fn main() -> Result<(), String> {
                 k,
                 algorithm: algorithm.name(),
                 elapsed,
+                recalls,
             }
             .save(&reports_dir)?;
         }

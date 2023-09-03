@@ -36,6 +36,10 @@ fn make_path_npy(dir: &std::path::Path, name: &str, variant: &str) -> std::path:
     let mut path = dir.to_path_buf();
     path.push("as_npy");
     path.push(format!("{name}_{variant}.npy"));
+    if !path.exists() {
+        path.pop();
+        path.push(format!("{name}-{variant}.npy"));
+    }
     assert!(path.exists(), "Path not found: {path:?}");
     path
 }

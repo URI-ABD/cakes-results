@@ -55,7 +55,7 @@ class Mode(str, enum.Enum):
         """Print the throughput instead of plotting the elapsed time."""
         if self == Mode.Reports:
             lines = [
-                "data_name,num_shards,algorithm,k,throughput",
+                "data_name,num_shards,algorithm,k,throughput,recall",
             ]
             reports = load_reports(inp_dir)
             for data_name, d_reports in reports.items():
@@ -70,6 +70,7 @@ class Mode(str, enum.Enum):
                                     r.algorithm,
                                     r.k,
                                     f"{r.throughput_mean:.3e}",
+                                    f"{r.recall_mean:.3e}",
                                 ],
                             ),
                         )

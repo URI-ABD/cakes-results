@@ -19,9 +19,12 @@ class Report(pydantic.BaseModel):
     k: int
     algorithm: str
     elapsed: list[float]
+    recalls = list[float]
 
     elapsed_mean: float = 0.0
     elapsed_std: float = 0.0
+    recall_mean: float = 0.0
+    recall_std: float = 0.0
     throughput: list[float] = []
     throughput_mean: float = 0.0
 
@@ -29,8 +32,14 @@ class Report(pydantic.BaseModel):
         """Calculate additional fields and initialize the Report."""
         elapsed: list[float] = kwargs.get("elapsed")  # type: ignore[assignment]
 
+        if "recalls" not in kwargs:
+            kwargs["recalls"] = [1.0]
+        recalls: list[float] = kwargs.get("recalls")  # type: ignore[assignment]
+
         kwargs["elapsed_mean"] = float(numpy.mean(elapsed))
         kwargs["elapsed_std"] = float(numpy.std(elapsed))
+        kwargs["recall_mean"] = float(numpy.mean(recalls))
+        kwargs["recall_std"] = float(numpy.std(recalls))
         kwargs["throughput"] = [1.0 / t for t in elapsed]
         kwargs["throughput_mean"] = float(numpy.mean(kwargs["throughput"]))
 
@@ -50,6 +59,8 @@ class Report(pydantic.BaseModel):
             f"  algorithm={self.algorithm},\n"
             f"  elapsed_mean={self.elapsed_mean:.3e} seconds,\n"
             f"  elapsed_std={self.elapsed_std:.3e} seconds,\n"
+            f"  recall_mean={self.recall_mean:.3e},\n"
+            f"  recall_std={self.recall_std:.3e},\n"
             f"  throughput_mean={self.throughput_mean:.3e} QPS,\n"
             f")"
         )
